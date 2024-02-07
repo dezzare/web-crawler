@@ -35,19 +35,42 @@ function getURLsFromHTML(htmlBody, baseUrl){
     return urls
 }
 
-async function crawPage(baseURL) {
+async function crawPage(baseURL, currentURL, pages) {
+    const baseURLObj = new URL(baseURL)
+    const currentURLObj = new URL(currentURL)
+    if (baseURLObj.hostname !== currentURLObj.hostname) {
+        return pages
+    }
+    
+    const normalizedCurrentURL = normalizeURL(currentURL)
+    if (pages[normalizedCurrentURL] > 0){
+        pages[normalizedCurrentURL]++
+        return pages
+    }
+
+    pages[normalizedCurrentURL] = 1
+    console.log(`Crawling: ${currentURL}`)
+
     try {
-        const resp = await fetch(baseURL)
+        const resp = await fetch(currentURL)
         if (resp.status > 399){
-            console.log(`error in fetch with status code: ${resp.status} on page: ${baseURL}`)
-            return
+            console.log(`error in fetch with status code: ${resp.status} on page: ${currentURL}`)
+            return pages
         }
+
         const contentType = resp.headers.get("content-type")
         if (!contentType.includes("text/html")){
-            console.log(`non html response, content type: ${contentType} on page: ${baseURL}`)
-            return
+            console.log(`ERROR: non html response, content type: ${contentType} on page: ${currentURL}`)
+            return pages
         }
-        console.log(await resp.text())
+
+        const htmlBody = await resp.text()
+        const nextURLS = getURLsFromHTML(htmlBody, baseURL)
+
+        for (const nextURL of nextURLS){
+            pages = await crawPage(baseURL, nextURL, pages)
+        }
+        return pages
 
     } catch(err) {
         console.log(err.message)
