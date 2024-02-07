@@ -19,5 +19,8 @@
   "homepage": "https://github.com/dezzare/web-crawler#readme",
   "dependencies": {
     "jest": "^29.7.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0"
   }
 }
