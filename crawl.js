@@ -35,7 +35,28 @@ function getURLsFromHTML(htmlBody, baseUrl){
     return urls
 }
 
+async function crawPage(baseURL) {
+    try {
+        const resp = await fetch(baseURL)
+        if (resp.status > 399){
+            console.log(`error in fetch with status code: ${resp.status} on page: ${baseURL}`)
+            return
+        }
+        const contentType = resp.headers.get("content-type")
+        if (!contentType.includes("text/html")){
+            console.log(`non html response, content type: ${contentType} on page: ${baseURL}`)
+            return
+        }
+        console.log(await resp.text())
+
+    } catch(err) {
+        console.log(err.message)
+    }
+    
+}
+
 module.exports = {
     normalizeURL,
-    getURLsFromHTML
+    getURLsFromHTML,
+    crawPage
 }
